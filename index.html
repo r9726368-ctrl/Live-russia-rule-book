@@ -1,0 +1,1181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#030713">
+  <meta name="description" content="Live Russia community rules portal">
+  <title>LIVE RUSSIA — Rules Portal</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #030713;
+      --panel: rgba(7, 16, 36, .94);
+      --panel-2: rgba(10, 24, 49, .88);
+      --line: rgba(83, 160, 255, .24);
+      --blue: #26dfff;
+      --text: #f3f8ff;
+      --muted: #9caeca;
+      --danger: #ff557b;
+      --success: #76ffc0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 14% 4%, rgba(0, 96, 255, .22), transparent 35%),
+        radial-gradient(ellipse at 91% 22%, rgba(68, 0, 255, .13), transparent 29%),
+        radial-gradient(ellipse at 50% 100%, rgba(0, 196, 255, .12), transparent 42%),
+        linear-gradient(145deg, #02040c, #07132b 50%, #02040c);
+      background-attachment: fixed;
+    }
+    body::before {
+      position: fixed;
+      z-index: -1;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      opacity: .16;
+      background-image:
+        linear-gradient(rgba(65, 142, 255, .16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(65, 142, 255, .16) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(#000 0%, transparent 85%);
+    }
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 3px;
+    }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+
+    .shell { width: min(100% - 32px, 980px); margin: 0 auto; padding: 18px 0 46px; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 66px;
+      padding: 10px 0 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      display: grid;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid rgba(39, 223, 255, .8);
+      border-radius: 13px;
+      color: #e8fcff;
+      background: linear-gradient(145deg, #104c8f, #07162c 70%);
+      box-shadow: 0 0 24px rgba(0, 153, 255, .32), inset 0 0 14px rgba(0, 207, 255, .13);
+      font-size: 23px;
+    }
+    .brand-name { font-size: .94rem; font-weight: 950; letter-spacing: .16em; }
+    .brand-sub { margin-top: 4px; color: #94aacb; font-size: .66rem; letter-spacing: .17em; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .connection { display: flex; align-items: center; gap: 8px; color: #adbfda; font-size: .75rem; white-space: nowrap; }
+    .connection-dot { width: 7px; height: 7px; border-radius: 50%; background: #53f3b0; box-shadow: 0 0 12px #53f3b0; }
+    .icon-button, .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 10px 14px;
+      border: 1px solid #285278;
+      border-radius: 10px;
+      color: #eaf6ff;
+      background: linear-gradient(135deg, #102644, #09152a);
+      font-size: .83rem;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, filter .16s ease;
+    }
+    .button:hover, .icon-button:hover { transform: translateY(-1px); border-color: var(--blue); box-shadow: 0 0 19px rgba(0, 184, 255, .17); }
+    .button.primary {
+      border-color: #13bde8;
+      background: linear-gradient(120deg, #075ba8, #087ea7);
+      box-shadow: 0 0 20px rgba(0, 137, 255, .2);
+    }
+    .button.admin {
+      border-color: rgba(255, 189, 91, .6);
+      color: #ffe1af;
+      background: linear-gradient(120deg, #342010, #1b1420);
+    }
+    .button.danger { border-color: rgba(255, 85, 123, .55); color: #ffc1cf; background: #27101b; }
+    .button.small { min-height: 34px; padding: 7px 10px; font-size: .75rem; }
+    .button.quiet { color: #bdd8f3; background: rgba(9, 22, 42, .62); }
+
+    .view { display: none; }
+    .view.active { display: block; animation: enter .24s ease both; }
+    @keyframes enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+    .hero { padding: 48px 0 27px; text-align: center; }
+    .eyebrow { color: #64eaff; font-size: .69rem; font-weight: 900; letter-spacing: .34em; }
+    .hero h1 {
+      margin: 12px 0 14px;
+      color: transparent;
+      background: linear-gradient(180deg, #fff 5%, #79edff 48%, #2684ff 88%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(20, 148, 255, .32));
+      font-size: clamp(2.8rem, 9vw, 5.4rem);
+      font-style: italic;
+      font-weight: 1000;
+      letter-spacing: -.065em;
+      line-height: .97;
+    }
+    .hero-copy { max-width: 560px; margin: 0 auto; color: #a2b6d2; font-size: .95rem; line-height: 1.7; }
+    .hero-rule { width: min(370px, 72%); height: 2px; margin: 24px auto 0; background: linear-gradient(90deg, transparent, #09dfff, transparent); box-shadow: 0 0 15px #00cfff; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 18px 0 14px; }
+    .section-heading h2 { margin: 0; font-size: 1.16rem; letter-spacing: .025em; }
+    .section-heading p { margin: 6px 0 0; color: var(--muted); font-size: .83rem; }
+    .count {
+      flex: 0 0 auto;
+      padding: 7px 11px;
+      border: 1px solid rgba(0, 205, 255, .34);
+      border-radius: 999px;
+      color: #a8f0ff;
+      background: rgba(3, 28, 49, .8);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .category-grid { display: grid; gap: 12px; width: min(100%, 820px); margin: 0 auto; }
+    .category {
+      --accent: #21dbff;
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 82px;
+      gap: 15px;
+      overflow: hidden;
+      padding: 12px 16px;
+      border: 1px solid color-mix(in srgb, var(--accent) 58%, #16304c);
+      border-radius: 14px;
+      color: var(--text);
+      background: linear-gradient(105deg, rgba(10, 28, 54, .97), rgba(4, 12, 27, .96) 74%);
+      box-shadow: inset 0 1px rgba(255,255,255,.055), 0 9px 24px rgba(0,0,0,.23);
+      text-align: left;
+      cursor: pointer;
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+    .category::before {
+      position: absolute;
+      top: 11px;
+      bottom: 11px;
+      left: 0;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--accent);
+      box-shadow: 0 0 15px var(--accent);
+      content: "";
+    }
+    .category::after {
+      position: absolute;
+      top: -62px;
+      right: -40px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: var(--accent);
+      content: "";
+      filter: blur(50px);
+      opacity: .1;
+      pointer-events: none;
+    }
+    .category:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 10px 27px color-mix(in srgb, var(--accent) 16%, transparent); }
+    .category:active { transform: translateY(0) scale(.995); }
+    .cat-icon {
+      display: grid;
+      flex: 0 0 50px;
+      width: 50px;
+      height: 50px;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--accent) 64%, transparent);
+      border-radius: 13px;
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, #061125);
+      box-shadow: inset 0 0 12px color-mix(in srgb, var(--accent) 10%, transparent);
+      font-size: 23px;
+    }
+    .cat-copy { flex: 1; min-width: 0; }
+    .cat-title { display: block; font-size: .93rem; font-weight: 850; line-height: 1.35; }
+    .cat-sub { display: block; margin-top: 5px; color: #9cafca; font-size: .74rem; }
+    .cat-arrow { padding-left: 4px; color: var(--accent); font-size: 1.45rem; font-weight: 850; text-shadow: 0 0 12px var(--accent); }
+    .c-cyan { --accent: #23ddff; }
+    .c-green { --accent: #58ff9e; }
+    .c-red { --accent: #ff5d83; }
+    .c-purple { --accent: #c47bff; }
+    .c-orange { --accent: #ffb957; }
+    .c-teal { --accent: #4df1df; }
+    .c-pink { --accent: #ff69ca; }
+    .c-yellow { --accent: #ffe55e; }
+    .c-violet { --accent: #9b8aff; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 23px 0 17px; }
+    .back { padding: 8px 0; border: 0; color: #a8dfff; background: transparent; font-size: .86rem; font-weight: 800; cursor: pointer; }
+    .back:hover { color: #fff; }
+    .detail-hero {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border: 1px solid rgba(41, 181, 237, .38);
+      border-radius: 17px;
+      background: linear-gradient(120deg, rgba(9, 37, 71, .94), rgba(5, 15, 32, .98));
+      box-shadow: inset 0 0 45px rgba(0, 150, 255, .08);
+    }
+    .detail-hero::after { position: absolute; top: -88px; right: -55px; width: 190px; height: 190px; border-radius: 50%; background: #00d7ff; content: ""; filter: blur(82px); opacity: .14; pointer-events: none; }
+    .detail-icon { color: #b1f4ff; font-size: 1.85rem; }
+    .detail-hero h2 { position: relative; margin: 9px 0 7px; font-size: clamp(1.45rem, 5vw, 2.12rem); line-height: 1.16; }
+    .detail-hero p { position: relative; max-width: 680px; margin: 0; color: #a4bad8; font-size: .9rem; line-height: 1.65; }
+    .rules-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; }
+    .rules-toolbar p { margin: 0; color: var(--muted); font-size: .82rem; }
+    .search-input { width: min(100%, 290px); min-height: 40px; padding: 9px 12px; border: 1px solid #264769; border-radius: 9px; color: var(--text); background: #061125; }
+    .rules-list { display: grid; gap: 11px; margin-top: 12px; }
+    .rule-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 17px;
+      border: 1px solid #204264;
+      border-radius: 13px;
+      background: linear-gradient(120deg, rgba(9, 25, 47, .97), rgba(5, 12, 25, .98));
+      box-shadow: inset 0 1px rgba(255,255,255,.025);
+    }
+    .rule-number { flex: 0 0 auto; padding: 4px 8px; border: 1px solid rgba(42, 221, 255, .25); border-radius: 7px; color: #64eaff; background: rgba(2, 38, 59, .68); font-size: .78rem; font-weight: 900; }
+    .rule-text { flex: 1; min-width: 0; overflow-wrap: anywhere; color: #e7f1ff; font-size: .9rem; line-height: 1.7; white-space: pre-wrap; }
+    .rule-actions, .row-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: 7px; }
+    .empty {
+      padding: 27px 20px;
+      border: 1px dashed #315071;
+      border-radius: 14px;
+      color: #a7bad4;
+      background: rgba(5, 15, 31, .74);
+      line-height: 1.6;
+      text-align: center;
+    }
+    .empty-icon { margin-bottom: 8px; color: #69dcff; font-size: 1.7rem; }
+    .empty strong { display: block; margin-bottom: 4px; color: #eef7ff; }
+
+    .login-box { width: min(100%, 450px); margin: 42px auto 55px; padding: 24px; border: 1px solid rgba(255, 185, 87, .35); border-radius: 17px; background: linear-gradient(135deg, rgba(25, 23, 34, .98), rgba(7, 17, 34, .98)); box-shadow: 0 20px 65px rgba(0,0,0,.3); }
+    .login-box h2 { margin: 15px 0 6px; font-size: 1.45rem; }
+    .muted { color: var(--muted); font-size: .84rem; line-height: 1.6; }
+    .field { display: grid; gap: 7px; margin: 13px 0; }
+    .field label { color: #c0d1e8; font-size: .79rem; font-weight: 800; }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid #2a4c70;
+      border-radius: 9px;
+      color: #fff;
+      background: #040b18;
+    }
+    .field input::placeholder, .field textarea::placeholder { color: #748aa7; }
+    .field textarea { min-height: 122px; resize: vertical; line-height: 1.55; }
+    .field select { color-scheme: dark; }
+    .login-error { min-height: 20px; margin: 9px 0 0; color: #ff9ab0; font-size: .83rem; }
+    .admin-hero { border-color: rgba(255, 185, 87, .33); background: linear-gradient(120deg, rgba(49, 32, 16, .62), rgba(6, 17, 34, .97)); }
+    .admin-hero .eyebrow { color: #ffd093; }
+    .admin-layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 14px; margin-top: 16px; }
+    .admin-nav { display: grid; align-content: start; gap: 8px; }
+    .admin-nav button { min-height: 43px; padding: 10px 12px; border: 1px solid #263e5c; border-radius: 9px; color: #c9ddf5; background: rgba(8, 21, 41, .9); text-align: left; cursor: pointer; }
+    .admin-nav button.active { border-color: var(--blue); color: white; background: #0a2944; box-shadow: 0 0 16px rgba(0, 191, 255, .12); }
+    .admin-content { min-width: 0; }
+    .panel { margin-bottom: 13px; padding: 18px; border: 1px solid rgba(67, 117, 167, .3); border-radius: 14px; background: linear-gradient(140deg, rgba(15, 24, 42, .97), rgba(6, 14, 28, .98)); }
+    .panel h3 { margin: 0 0 6px; font-size: 1.04rem; }
+    .panel > .muted { margin: 0 0 14px; }
+    .notice { padding: 11px 12px; border: 1px solid rgba(69, 156, 215, .25); border-radius: 9px; color: #aac3de; background: rgba(3, 26, 43, .52); font-size: .77rem; line-height: 1.55; }
+    .notice.warning { margin-top: 13px; border-color: rgba(255, 185, 87, .24); color: #e7c89f; background: rgba(55, 36, 13, .26); }
+    .form-row { display: grid; grid-template-columns: minmax(120px, .65fr) minmax(0, 1.8fr); gap: 12px; }
+    .inline-form { display: flex; align-items: end; gap: 10px; }
+    .inline-form .field { flex: 1; margin-bottom: 11px; }
+    .admin-list { margin-top: 14px; }
+    .admin-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(52, 79, 111, .56); }
+    .admin-row:last-child { border-bottom: 0; }
+    .admin-row-copy { min-width: 0; }
+    .admin-row-title { display: block; overflow-wrap: anywhere; font-size: .86rem; font-weight: 800; }
+    .admin-row-meta { display: block; margin-top: 4px; color: #90a6c2; font-size: .74rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .hidden { display: none !important; }
+    .footer { margin-top: 28px; color: #7187a6; font-size: .73rem; line-height: 1.7; text-align: center; }
+    .toast {
+      position: fixed;
+      z-index: 5;
+      right: 18px;
+      bottom: 18px;
+      max-width: min(420px, calc(100vw - 36px));
+      padding: 12px 15px;
+      border: 1px solid rgba(61, 218, 255, .42);
+      border-radius: 10px;
+      color: #e8fbff;
+      background: #07182b;
+      box-shadow: 0 12px 34px rgba(0,0,0,.38), 0 0 20px rgba(0, 198, 255, .12);
+      font-size: .82rem;
+      line-height: 1.5;
+    }
+    .toast.error { border-color: rgba(255, 85, 123, .6); color: #ffd0da; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    @media (max-width: 650px) {
+      .shell { width: min(100% - 24px, 980px); padding-top: 12px; }
+      .topbar { align-items: flex-start; }
+      .connection { display: none; }
+      .top-actions { margin-left: auto; }
+      .hero { padding: 37px 0 22px; }
+      .hero-copy { font-size: .88rem; }
+      .section-heading { align-items: flex-start; }
+      .count { margin-top: 1px; }
+      .category { min-height: 76px; gap: 12px; padding: 10px 12px; }
+      .cat-icon { flex-basis: 46px; width: 46px; height: 46px; font-size: 21px; }
+      .cat-title { font-size: .85rem; }
+      .cat-sub { font-size: .69rem; }
+      .detail-hero { padding: 19px; }
+      .admin-layout { grid-template-columns: 1fr; }
+      .admin-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .admin-row { align-items: flex-start; }
+      .admin-row .row-actions { justify-content: flex-end; }
+      .rule-card { flex-wrap: wrap; }
+      .rule-actions { width: 100%; }
+      .rules-toolbar { align-items: flex-start; flex-direction: column; }
+      .search-input { width: 100%; }
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+    }
+    @media (max-width: 420px) {
+      .brand { gap: 9px; }
+      .brand-mark { flex-basis: 39px; width: 39px; height: 39px; }
+      .brand-name { font-size: .78rem; }
+      .brand-sub { font-size: .58rem; letter-spacing: .12em; }
+      .button { padding: 9px 10px; font-size: .77rem; }
+      .admin-row { flex-direction: column; }
+      .admin-row .row-actions { justify-content: flex-start; }
+      .inline-form { align-items: stretch; flex-direction: column; gap: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Live Russia Rules Portal">
+        <div class="brand-mark" aria-hidden="true">✦</div>
+        <div>
+          <div class="brand-name">LIVE RUSSIA</div>
+          <div class="brand-sub">COMMUNITY RULES PORTAL</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div class="connection"><span class="connection-dot" aria-hidden="true"></span><span>RULES DIRECTORY</span></div>
+        <button class="button admin" id="adminAccessButton" type="button">Admin sign in</button>
+      </div>
+    </header>
+
+    <section id="homeView" class="view active" aria-labelledby="homeTitle">
+      <div class="hero">
+        <div class="eyebrow">LIVE RUSSIA COMMUNITY</div>
+        <h1 id="homeTitle">RULES PORTAL</h1>
+        <p class="hero-copy">Choose a section to read its current rules and guidelines. Clear information for the whole community.</p>
+        <div class="hero-rule" aria-hidden="true"></div>
+      </div>
+      <div class="section-heading">
+        <div><h2>Browse sections</h2><p>Select a section to view its rules.</p></div>
+        <span class="count" id="categoryCount">0 SECTIONS</span>
+      </div>
+      <div class="category-grid" id="categoryGrid"></div>
+      <div class="footer">LIVE RUSSIA · OFFICIAL COMMUNITY RULES</div>
+    </section>
+
+    <section id="categoryView" class="view" aria-labelledby="detailTitle">
+      <div class="toolbar">
+        <button class="back" id="backHome" type="button">← All sections</button>
+        <button class="button admin hidden" id="categoryAdminButton" type="button">Manage rules</button>
+      </div>
+      <div class="detail-hero">
+        <div class="detail-icon" id="detailIcon" aria-hidden="true">✦</div>
+        <h2 id="detailTitle">Rules</h2>
+        <p id="detailDescription">Rules for this section.</p>
+      </div>
+      <div class="rules-toolbar">
+        <p id="rulesCount">Rules in this section</p>
+        <label class="sr-only" for="ruleSearch">Search this section</label>
+        <input class="search-input" id="ruleSearch" type="search" placeholder="Search this section…" autocomplete="off">
+      </div>
+      <div class="rules-list" id="ruleList"></div>
+      <div class="footer">Please contact an authorized administrator if a rule needs clarification.</div>
+    </section>
+
+    <section id="loginView" class="view" aria-labelledby="loginTitle">
+      <div class="toolbar"><button class="back" id="loginBack" type="button">← Back to portal</button></div>
+      <div class="login-box">
+        <div class="brand-mark" aria-hidden="true">⌑</div>
+        <h2 id="loginTitle">Administrator access</h2>
+        <p class="muted">Sign in to manage portal sections and rules.</p>
+        <form id="loginForm">
+          <div class="field">
+            <label for="adminUsername">Username</label>
+            <input id="adminUsername" name="username" type="text" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="adminPassword">Password</label>
+            <input id="adminPassword" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <button class="button primary" type="submit" style="width:100%">Sign in</button>
+        </form>
+        <p id="loginError" class="login-error" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section id="adminView" class="view" aria-labelledby="adminTitle">
+      <div class="toolbar">
+        <button class="back" id="adminBack" type="button">← Back to portal</button>
+        <button class="button danger" id="logoutButton" type="button">Sign out</button>
+      </div>
+      <div class="detail-hero admin-hero">
+        <div class="eyebrow">ADMINISTRATOR AREA</div>
+        <h2 id="adminTitle">Portal management</h2>
+        <p>Create sections, publish and edit rules, and prepare an updated portal file to share.</p>
+      </div>
+      <div class="admin-layout">
+        <nav class="admin-nav" id="adminNav" aria-label="Admin sections"></nav>
+        <div class="admin-content">
+          <div class="panel" id="sectionManager">
+            <h3>Manage sections</h3>
+            <p class="muted">Add a section or change the name of an existing one.</p>
+            <div class="inline-form">
+              <div class="field">
+                <label for="newSectionName">Section name</label>
+                <input id="newSectionName" maxlength="90" placeholder="Enter a section name">
+              </div>
+              <div class="field" style="max-width:110px">
+                <label for="newSectionIcon">Symbol</label>
+                <input id="newSectionIcon" maxlength="8" placeholder="✦" aria-label="Optional section symbol">
+              </div>
+              <button class="button primary" id="addSectionButton" type="button">＋ Add section</button>
+            </div>
+            <div class="admin-list" id="sectionManageList"></div>
+          </div>
+
+          <div class="panel hidden" id="ruleManager">
+            <h3>Manage rules</h3>
+            <p class="muted">Add a rule, edit existing text, or move a rule to another section.</p>
+            <div class="field">
+              <label for="ruleSection">Section</label>
+              <select id="ruleSection"></select>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="ruleNumber">Rule number or label</label>
+                <input id="ruleNumber" maxlength="32" placeholder="For example, 1.01">
+              </div>
+              <div class="field">
+                <label for="ruleText">Rule text</label>
+                <textarea id="ruleText" maxlength="12000" placeholder="Write the complete rule here"></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="button primary" id="saveRuleButton" type="button">＋ Add rule</button>
+              <button class="button quiet hidden" id="cancelRuleEditButton" type="button">Cancel edit</button>
+            </div>
+            <div class="admin-list" id="adminRuleList"></div>
+          </div>
+
+          <div class="notice" id="localSaveNotice">
+            Changes save in this browser. To share the latest rules, download the updated portal HTML and give that file to your users.
+          </div>
+          <div class="notice warning">
+            This single-file portal has browser-only administrator controls, not secure server authentication. Anyone with access to the file can inspect or bypass those controls.
+          </div>
+        </div>
+      </div>
+      <div class="form-actions" style="justify-content:center;margin-top:17px">
+        <button class="button primary" id="downloadPortalButton" type="button">↓ Download updated portal</button>
+      </div>
+    </section>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </main>
+
+  <script type="application/json" id="portal-seed" data-published="false">[
+    {"id":"official-admin-rules","name":"Official Admin Rules","icon":"🛡","color":"cyan","rules":[]},
+    {"id":"general-information","name":"General Information","icon":"ⓘ","color":"green","rules":[]},
+    {"id":"punishment-terminology","name":"Punishment Terminology","icon":"⚖","color":"red","rules":[]},
+    {"id":"role-play-rules","name":"Role Play Rules","icon":"♟","color":"purple","rules":[]},
+    {"id":"in-game-chat","name":"In Game Chat","icon":"◉","color":"orange","rules":[]},
+    {"id":"game-account-regulations","name":"Game Account Regulations","icon":"♙","color":"teal","rules":[]},
+    {"id":"family-captures-battle-family-container","name":"Family Captures / Battle For Family Container","icon":"⌂","color":"pink","rules":[]},
+    {"id":"gang-shootouts","name":"Gang Shootouts","icon":"◎","color":"yellow","rules":[]},
+    {"id":"vip-chat-monitoring","name":"VIP Chat Monitoring","icon":"♛","color":"violet","rules":[]},
+    {"id":"junior-admin-support-handbook","name":"Junior Admin & Support Staff Operational Handbook","icon":"▤","color":"teal","rules":[]}
+  ]</script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const ADMIN_USERNAME_SHA256 = "493e74439e9de4b59c62b60c0829c80e0672043c790a30f1a331e6211fe3a1ad";
+      const ADMIN_PASSWORD_SHA256 = "e16da6939a2366620e4c9e2b56b00e99fe7ef66f26d073b8937e2416e19d0535";
+      const LEGACY_KEY = "lr_rules_data";
+      const palette = ["cyan", "green", "red", "purple", "orange", "teal", "pink", "yellow", "violet"];
+
+      const $ = (id) => document.getElementById(id);
+      const seedNode = $("portal-seed");
+      let seedData;
+      try {
+        seedData = JSON.parse(seedNode.textContent);
+      } catch {
+        seedData = [];
+      }
+
+      function fingerprint(text) {
+        let hash = 2166136261;
+        for (let i = 0; i < text.length; i += 1) {
+          hash ^= text.charCodeAt(i);
+          hash = Math.imul(hash, 16777619);
+        }
+        return (hash >>> 0).toString(16);
+      }
+
+      const storageKey = "live-russia-rules-" + fingerprint(JSON.stringify(seedData));
+      let isAdmin = false;
+      let currentView = "homeView";
+      let returnView = "homeView";
+      let activeCategoryId = null;
+      let activeAdminTab = "sections";
+      let editingRule = null;
+      let toastTimer = 0;
+      let storageAvailable = true;
+
+      function normalizeCategories(value) {
+        if (!Array.isArray(value)) return null;
+        return value
+          .filter((category) => category && typeof category.name === "string" && category.name.trim())
+          .filter((category) => category.name.trim().toLowerCase() !== "admin panel")
+          .map((category, categoryIndex) => ({
+            id: String(category.id || "section-" + categoryIndex + "-" + Date.now()),
+            name: category.name.trim().slice(0, 90),
+            icon: String(category.icon || "✦").slice(0, 8),
+            color: palette.includes(category.color) ? category.color : palette[categoryIndex % palette.length],
+            rules: Array.isArray(category.rules)
+              ? category.rules
+                  .filter((rule) => rule && typeof rule.text === "string" && rule.text.trim())
+                  .map((rule, ruleIndex) => ({
+                    id: String(rule.id || "rule-" + categoryIndex + "-" + ruleIndex + "-" + Date.now()),
+                    number: String(rule.number || "").trim().slice(0, 32),
+                    text: rule.text.slice(0, 12000),
+                  }))
+              : [],
+          }));
+      }
+
+      function loadInitialData() {
+        try {
+          const saved = localStorage.getItem(storageKey);
+          if (saved !== null) {
+            const normalized = normalizeCategories(JSON.parse(saved));
+            if (normalized) return normalized;
+          }
+          if (seedNode.dataset.published !== "true") {
+            const legacy = localStorage.getItem(LEGACY_KEY);
+            if (legacy) {
+              const migrated = normalizeCategories(JSON.parse(legacy));
+              if (migrated && migrated.length) {
+                localStorage.setItem(storageKey, JSON.stringify(migrated));
+                return migrated;
+              }
+            }
+          }
+          return normalizeCategories(seedData) || [];
+        } catch {
+          storageAvailable = false;
+          return normalizeCategories(seedData) || [];
+        }
+      }
+
+      let data = loadInitialData();
+
+      function showToast(message, isError = false) {
+        const toast = $("toast");
+        toast.textContent = message;
+        toast.classList.toggle("error", isError);
+        toast.classList.remove("hidden");
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => toast.classList.add("hidden"), 3600);
+      }
+
+      function persist(message = "Changes saved in this browser.") {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(data));
+          storageAvailable = true;
+          showToast(message);
+          return true;
+        } catch {
+          storageAvailable = false;
+          showToast("Browser storage is unavailable. Changes may be lost when this file closes.", true);
+          return false;
+        }
+      }
+
+      function makeId(prefix) {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") return prefix + "-" + window.crypto.randomUUID();
+        return prefix + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+      }
+
+      function makeButton(label, className, onClick, attributes = {}) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = className;
+        button.textContent = label;
+        Object.entries(attributes).forEach(([name, value]) => button.setAttribute(name, value));
+        button.addEventListener("click", onClick);
+        return button;
+      }
+
+      function show(viewId) {
+        document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === viewId));
+        currentView = viewId;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function renderCategories() {
+        const grid = $("categoryGrid");
+        grid.replaceChildren();
+        $("categoryCount").textContent = data.length + (data.length === 1 ? " SECTION" : " SECTIONS");
+
+        if (!data.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          const title = document.createElement("strong");
+          title.textContent = "No sections are available";
+          const copy = document.createElement("span");
+          copy.textContent = isAdmin ? "Create a section from the administrator area." : "An administrator has not published any sections yet.";
+          empty.append(title, copy);
+          grid.appendChild(empty);
+          return;
+        }
+
+        data.forEach((category) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "category c-" + (palette.includes(category.color) ? category.color : "cyan");
+          button.setAttribute("aria-label", category.name + ", " + category.rules.length + " rules");
+
+          const icon = document.createElement("span");
+          icon.className = "cat-icon";
+          icon.setAttribute("aria-hidden", "true");
+          icon.textContent = category.icon || "✦";
+
+          const copy = document.createElement("span");
+          copy.className = "cat-copy";
+          const title = document.createElement("span");
+          title.className = "cat-title";
+          title.textContent = category.name;
+          const subtitle = document.createElement("span");
+          subtitle.className = "cat-sub";
+          subtitle.textContent = category.rules.length + (category.rules.length === 1 ? " rule available" : " rules available");
+          copy.append(title, subtitle);
+
+          const arrow = document.createElement("span");
+          arrow.className = "cat-arrow";
+          arrow.setAttribute("aria-hidden", "true");
+          arrow.textContent = "»";
+          button.append(icon, copy, arrow);
+          button.addEventListener("click", () => openCategory(category.id));
+          grid.appendChild(button);
+        });
+      }
+
+      function openCategory(categoryId) {
+        const category = data.find((item) => item.id === categoryId);
+        if (!category) {
+          show("homeView");
+          return;
+        }
+        activeCategoryId = categoryId;
+        $("detailIcon").textContent = category.icon || "✦";
+        $("detailTitle").textContent = category.name;
+        $("detailDescription").textContent = "Browse the published rules in this section.";
+        $("categoryAdminButton").classList.toggle("hidden", !isAdmin);
+        $("ruleSearch").value = "";
+        renderPublicRules();
+        show("categoryView");
+      }
+
+      function renderPublicRules() {
+        const category = data.find((item) => item.id === activeCategoryId);
+        const list = $("ruleList");
+        list.replaceChildren();
+        if (!category) return;
+
+        const query = $("ruleSearch").value.trim().toLocaleLowerCase();
+        const matches = category.rules.filter((rule) =>
+          (rule.number + " " + rule.text).toLocaleLowerCase().includes(query)
+        );
+        $("rulesCount").textContent = category.rules.length + (category.rules.length === 1 ? " rule" : " rules");
+
+        if (!matches.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          const title = document.createElement("strong");
+          const copy = document.createElement("span");
+          if (category.rules.length === 0) {
+            title.textContent = "No rules have been published";
+            copy.textContent = isAdmin ? "Use Manage rules to add the first rule to this section." : "Rules for this section have not been added yet.";
+          } else {
+            title.textContent = "No matching rules";
+            copy.textContent = "Try a different search phrase.";
+          }
+          empty.append(title, copy);
+          list.appendChild(empty);
+          return;
+        }
+
+        matches.forEach((rule) => {
+          const card = document.createElement("article");
+          card.className = "rule-card";
+          const number = document.createElement("div");
+          number.className = "rule-number";
+          number.textContent = rule.number || "RULE";
+          const text = document.createElement("div");
+          text.className = "rule-text";
+          text.textContent = rule.text;
+          card.append(number, text);
+
+          if (isAdmin) {
+            const actions = document.createElement("div");
+            actions.className = "rule-actions";
+            actions.append(
+              makeButton("Edit", "button small quiet", () => {
+                returnView = "categoryView";
+                showAdminAndEdit(category.id, rule.id);
+              }),
+              makeButton("Remove", "button small danger", () => deleteRule(category.id, rule.id))
+            );
+            card.appendChild(actions);
+          }
+          list.appendChild(card);
+        });
+      }
+
+      function renderAdminNav() {
+        const nav = $("adminNav");
+        nav.replaceChildren();
+        [
+          ["sections", "▦  Sections"],
+          ["rules", "☷  Rules"],
+        ].forEach(([tab, label]) => {
+          nav.appendChild(makeButton(label, activeAdminTab === tab ? "active" : "", () => setAdminTab(tab), {
+            "data-tab": tab,
+            "aria-current": activeAdminTab === tab ? "page" : "false",
+          }));
+        });
+      }
+
+      function renderSectionManager() {
+        const list = $("sectionManageList");
+        list.replaceChildren();
+        if (!data.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "There are no sections yet. Create one above.";
+          list.appendChild(empty);
+          return;
+        }
+
+        data.forEach((category) => {
+          const row = document.createElement("div");
+          row.className = "admin-row";
+          const copy = document.createElement("div");
+          copy.className = "admin-row-copy";
+          const title = document.createElement("span");
+          title.className = "admin-row-title";
+          title.textContent = (category.icon || "✦") + " " + category.name;
+          const meta = document.createElement("span");
+          meta.className = "admin-row-meta";
+          meta.textContent = category.rules.length + (category.rules.length === 1 ? " rule" : " rules");
+          copy.append(title, meta);
+
+          const actions = document.createElement("div");
+          actions.className = "row-actions";
+          actions.append(
+            makeButton("Rename", "button small quiet", () => renameSection(category.id)),
+            makeButton("Remove", "button small danger", () => deleteSection(category.id))
+          );
+          row.append(copy, actions);
+          list.appendChild(row);
+        });
+      }
+
+      function renderRuleSectionSelect(preferredId) {
+        const select = $("ruleSection");
+        const previous = preferredId || select.value || activeCategoryId;
+        select.replaceChildren();
+        data.forEach((category) => {
+          const option = document.createElement("option");
+          option.value = category.id;
+          option.textContent = category.name;
+          select.appendChild(option);
+        });
+        if (data.some((category) => category.id === previous)) select.value = previous;
+        else if (data[0]) select.value = data[0].id;
+
+        const hasSections = data.length > 0;
+        select.disabled = !hasSections;
+        $("ruleNumber").disabled = !hasSections;
+        $("ruleText").disabled = !hasSections;
+        $("saveRuleButton").disabled = !hasSections;
+        renderAdminRules();
+      }
+
+      function renderAdminRules() {
+        const list = $("adminRuleList");
+        list.replaceChildren();
+        const category = data.find((item) => item.id === $("ruleSection").value);
+        if (!category) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "Create a section before adding rules.";
+          list.appendChild(empty);
+          return;
+        }
+        if (!category.rules.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "No rules in this section yet.";
+          list.appendChild(empty);
+          return;
+        }
+
+        category.rules.forEach((rule) => {
+          const row = document.createElement("div");
+          row.className = "admin-row";
+          const copy = document.createElement("div");
+          copy.className = "admin-row-copy";
+          const title = document.createElement("span");
+          title.className = "admin-row-title";
+          title.style.color = "#66e8ff";
+          title.textContent = rule.number || "RULE";
+          const meta = document.createElement("span");
+          meta.className = "admin-row-meta";
+          meta.textContent = rule.text.length > 160 ? rule.text.slice(0, 157) + "…" : rule.text;
+          copy.append(title, meta);
+          const actions = document.createElement("div");
+          actions.className = "row-actions";
+          actions.append(
+            makeButton("Edit", "button small quiet", () => loadRuleForEdit(category.id, rule.id)),
+            makeButton("Remove", "button small danger", () => deleteRule(category.id, rule.id))
+          );
+          row.append(copy, actions);
+          list.appendChild(row);
+        });
+      }
+
+      function renderAll(preferredRuleCategoryId) {
+        renderCategories();
+        renderSectionManager();
+        renderRuleSectionSelect(preferredRuleCategoryId);
+        $("adminAccessButton").textContent = isAdmin ? "Admin panel" : "Admin sign in";
+        if (currentView === "categoryView" && activeCategoryId && data.some((category) => category.id === activeCategoryId)) {
+          $("categoryAdminButton").classList.toggle("hidden", !isAdmin);
+          renderPublicRules();
+        } else if (currentView === "categoryView") {
+          show("homeView");
+        }
+      }
+
+      function setAdminTab(tab) {
+        activeAdminTab = tab === "rules" ? "rules" : "sections";
+        $("sectionManager").classList.toggle("hidden", activeAdminTab !== "sections");
+        $("ruleManager").classList.toggle("hidden", activeAdminTab !== "rules");
+        renderAdminNav();
+        if (activeAdminTab === "rules") renderRuleSectionSelect(activeCategoryId);
+      }
+
+      function openAdmin() {
+        if (!isAdmin) return;
+        setAdminTab(activeAdminTab);
+        show("adminView");
+      }
+
+      function showAdminAndEdit(categoryId, ruleId) {
+        if (!isAdmin) return;
+        setAdminTab("rules");
+        loadRuleForEdit(categoryId, ruleId);
+        show("adminView");
+      }
+
+      function renameSection(categoryId) {
+        if (!isAdmin) return;
+        const category = data.find((item) => item.id === categoryId);
+        if (!category) return;
+        const result = window.prompt("Enter the new section name:", category.name);
+        if (result === null) return;
+        const name = result.trim();
+        if (!name) {
+          showToast("A section name cannot be empty.", true);
+          return;
+        }
+        if (data.some((item) => item.id !== categoryId && item.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+          showToast("A section with that name already exists.", true);
+          return;
+        }
+        category.name = name.slice(0, 90);
+        persist("Section name updated.");
+        renderAll(categoryId);
+        if (activeCategoryId === categoryId && currentView === "categoryView") openCategory(categoryId);
+      }
+
+      function deleteSection(categoryId) {
+        if (!isAdmin) return;
+        const category = data.find((item) => item.id === categoryId);
+        if (!category) return;
+        const detail = category.rules.length
+          ? " This also permanently removes " + category.rules.length + (category.rules.length === 1 ? " rule" : " rules") + "."
+          : "";
+        if (!window.confirm('Remove the section "' + category.name + '"?' + detail)) return;
+        data = data.filter((item) => item.id !== categoryId);
+        if (activeCategoryId === categoryId) activeCategoryId = null;
+        if (editingRule && editingRule.categoryId === categoryId) clearRuleForm();
+        persist("Section removed.");
+        renderAll();
+        if (currentView === "categoryView" && !activeCategoryId) show("homeView");
+      }
+
+      function clearRuleForm() {
+        editingRule = null;
+        $("ruleNumber").value = "";
+        $("ruleText").value = "";
+        $("saveRuleButton").textContent = "＋ Add rule";
+        $("cancelRuleEditButton").classList.add("hidden");
+      }
+
+      function loadRuleForEdit(categoryId, ruleId) {
+        if (!isAdmin) return;
+        const category = data.find((item) => item.id === categoryId);
+        const rule = category && category.rules.find((item) => item.id === ruleId);
+        if (!rule) {
+          showToast("That rule could not be found.", true);
+          return;
+        }
+        editingRule = { categoryId, ruleId };
+        $("ruleSection").value = categoryId;
+        $("ruleNumber").value = rule.number;
+        $("ruleText").value = rule.text;
+        $("saveRuleButton").textContent = "Save changes";
+        $("cancelRuleEditButton").classList.remove("hidden");
+        renderAdminRules();
+      }
+
+      function saveRule() {
+        if (!isAdmin) return;
+        const wasEditing = Boolean(editingRule);
+        const destination = data.find((item) => item.id === $("ruleSection").value);
+        const number = $("ruleNumber").value.trim();
+        const text = $("ruleText").value.trim();
+        if (!destination) {
+          showToast("Create a section before adding a rule.", true);
+          return;
+        }
+        if (!number || !text) {
+          showToast("Enter both a rule number and rule text.", true);
+          return;
+        }
+        if (editingRule) {
+          const source = data.find((item) => item.id === editingRule.categoryId);
+          const sourceIndex = source ? source.rules.findIndex((item) => item.id === editingRule.ruleId) : -1;
+          if (!source || sourceIndex < 0) {
+            clearRuleForm();
+            showToast("That rule could not be found. Please try again.", true);
+            renderAll(destination.id);
+            return;
+          }
+          const [rule] = source.rules.splice(sourceIndex, 1);
+          rule.number = number.slice(0, 32);
+          rule.text = text.slice(0, 12000);
+          destination.rules.push(rule);
+        } else {
+          destination.rules.push({ id: makeId("rule"), number: number.slice(0, 32), text: text.slice(0, 12000) });
+        }
+        const selectedCategoryId = destination.id;
+        clearRuleForm();
+        persist(wasEditing ? "Rule updated." : "Rule added.");
+        renderAll(selectedCategoryId);
+      }
+
+      function deleteRule(categoryId, ruleId) {
+        if (!isAdmin) return;
+        const category = data.find((item) => item.id === categoryId);
+        const rule = category && category.rules.find((item) => item.id === ruleId);
+        if (!category || !rule) return;
+        if (!window.confirm("Remove this rule?")) return;
+        category.rules = category.rules.filter((item) => item.id !== ruleId);
+        if (editingRule && editingRule.ruleId === ruleId) clearRuleForm();
+        persist("Rule removed.");
+        renderAll(categoryId);
+      }
+
+      async function sha256(text) {
+        if (!window.crypto || !window.crypto.subtle) throw new Error("Secure hashing is unavailable in this browser.");
+        const bytes = new TextEncoder().encode(text);
+        const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+        return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+        $("loginError").textContent = "";
+        const username = $("adminUsername").value.trim();
+        const password = $("adminPassword").value;
+        try {
+          const [usernameHash, passwordHash] = await Promise.all([sha256(username), sha256(password)]);
+          if (usernameHash !== ADMIN_USERNAME_SHA256 || passwordHash !== ADMIN_PASSWORD_SHA256) {
+            $("loginError").textContent = "Username or password is incorrect.";
+            $("adminPassword").value = "";
+            $("adminPassword").focus();
+            return;
+          }
+          isAdmin = true;
+          $("adminUsername").value = "";
+          $("adminPassword").value = "";
+          $("loginError").textContent = "";
+          $("adminAccessButton").textContent = "Admin panel";
+          activeAdminTab = "sections";
+          renderAll();
+          openAdmin();
+        } catch (error) {
+          $("loginError").textContent = error && error.message
+            ? error.message + " Open this file in a current browser."
+            : "Administrator sign-in is unavailable in this browser.";
+        }
+      }
+
+      function downloadUpdatedPortal() {
+        if (!isAdmin) return;
+        try {
+          const clone = document.documentElement.cloneNode(true);
+          const cloneSeed = clone.querySelector("#portal-seed");
+          cloneSeed.textContent = JSON.stringify(data).replace(/</g, "\\u003c");
+          cloneSeed.dataset.published = "true";
+
+          clone.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === "homeView"));
+          [
+            "#categoryGrid", "#ruleList", "#adminNav", "#sectionManageList",
+            "#ruleSection", "#adminRuleList",
+          ].forEach((selector) => {
+            const node = clone.querySelector(selector);
+            if (node) node.replaceChildren();
+          });
+          clone.querySelector("#categoryAdminButton").classList.add("hidden");
+          clone.querySelector("#adminAccessButton").textContent = "Admin sign in";
+          clone.querySelector("#toast").classList.add("hidden");
+          clone.querySelector("#ruleSearch").value = "";
+          clone.querySelector("#adminUsername").value = "";
+          clone.querySelector("#adminPassword").value = "";
+          clone.querySelector("#ruleNumber").value = "";
+          clone.querySelector("#ruleText").value = "";
+          clone.querySelector("#newSectionName").value = "";
+          clone.querySelector("#newSectionIcon").value = "";
+          const source = "<!doctype html>\n" + clone.outerHTML;
+          const blob = new Blob([source], { type: "text/html;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "live-russia-rules-portal.html";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+          showToast("Updated portal downloaded. Share the new HTML file with your users.");
+        } catch {
+          showToast("The updated portal could not be downloaded in this browser.", true);
+        }
+      }
+
+      $("adminAccessButton").addEventListener("click", () => {
+        if (isAdmin) {
+          openAdmin();
+          return;
+        }
+        returnView = currentView === "loginView" || currentView === "adminView" ? "homeView" : currentView;
+        $("loginError").textContent = "";
+        show("loginView");
+        $("adminUsername").focus();
+      });
+      $("loginForm").addEventListener("submit", handleLogin);
+      $("loginBack").addEventListener("click", () => show(returnView));
+      $("backHome").addEventListener("click", () => show("homeView"));
+      $("categoryAdminButton").addEventListener("click", () => {
+        if (!isAdmin) return;
+        returnView = "categoryView";
+        activeAdminTab = "rules";
+        setAdminTab("rules");
+        $("ruleSection").value = activeCategoryId || $("ruleSection").value;
+        renderAdminRules();
+        openAdmin();
+      });
+      $("adminBack").addEventListener("click", () => show(returnView === "loginView" || returnView === "adminView" ? "homeView" : returnView));
+      $("logoutButton").addEventListener("click", () => {
+        isAdmin = false;
+        clearRuleForm();
+        $("adminAccessButton").textContent = "Admin sign in";
+        show(returnView === "loginView" || returnView === "adminView" ? "homeView" : returnView);
+        renderAll();
+      });
+      $("addSectionButton").addEventListener("click", () => {
+        if (!isAdmin) return;
+        const name = $("newSectionName").value.trim();
+        if (!name) {
+          showToast("Enter a section name.", true);
+          $("newSectionName").focus();
+          return;
+        }
+        if (data.some((category) => category.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+          showToast("A section with that name already exists.", true);
+          return;
+        }
+        const icon = $("newSectionIcon").value.trim() || "✦";
+        const color = palette[data.length % palette.length];
+        const id = makeId("section");
+        data.push({ id, name: name.slice(0, 90), icon: icon.slice(0, 8), color, rules: [] });
+        $("newSectionName").value = "";
+        $("newSectionIcon").value = "";
+        persist("Section added.");
+        renderAll(id);
+      });
+      $("saveRuleButton").addEventListener("click", saveRule);
+      $("cancelRuleEditButton").addEventListener("click", () => {
+        clearRuleForm();
+        renderAdminRules();
+      });
+      $("ruleSection").addEventListener("change", () => {
+        if (!editingRule) clearRuleForm();
+        renderAdminRules();
+      });
+      $("ruleSearch").addEventListener("input", renderPublicRules);
+      $("downloadPortalButton").addEventListener("click", downloadUpdatedPortal);
+
+      renderCategories();
+      renderSectionManager();
+      renderRuleSectionSelect();
+      renderAdminNav();
+      if (!storageAvailable) {
+        showToast("Browser storage is unavailable. Changes may be lost when this file closes.", true);
+      }
+    })();
+  </script>
+</body>
+</html>
