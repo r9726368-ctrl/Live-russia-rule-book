@@ -1,4 +1,4 @@
-<!doctype html>
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -247,16 +247,18 @@
     .rules-list { display: grid; gap: 11px; margin-top: 12px; }
     .rule-card {
       display: flex;
-      align-items: flex-start;
-      gap: 14px;
+      flex-direction: column;
+      gap: 12px;
       padding: 17px;
       border: 1px solid #204264;
       border-radius: 13px;
       background: linear-gradient(120deg, rgba(9, 25, 47, .97), rgba(5, 12, 25, .98));
       box-shadow: inset 0 1px rgba(255,255,255,.025);
     }
+    .rule-header-row { display: flex; align-items: flex-start; gap: 14px; }
     .rule-number { flex: 0 0 auto; padding: 4px 8px; border: 1px solid rgba(42, 221, 255, .25); border-radius: 7px; color: #64eaff; background: rgba(2, 38, 59, .68); font-size: .78rem; font-weight: 900; }
     .rule-text { flex: 1; min-width: 0; overflow-wrap: anywhere; color: #e7f1ff; font-size: .9rem; line-height: 1.7; white-space: pre-wrap; }
+    .rule-footer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid rgba(83, 160, 255, .12); padding-top: 10px; margin-top: 4px; }
     .rule-actions, .row-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: 7px; }
     .empty {
       padding: 27px 20px;
@@ -267,7 +269,6 @@
       line-height: 1.6;
       text-align: center;
     }
-    .empty-icon { margin-bottom: 8px; color: #69dcff; font-size: 1.7rem; }
     .empty strong { display: block; margin-bottom: 4px; color: #eef7ff; }
 
     .login-box { width: min(100%, 450px); margin: 42px auto 55px; padding: 24px; border: 1px solid rgba(255, 185, 87, .35); border-radius: 17px; background: linear-gradient(135deg, rgba(25, 23, 34, .98), rgba(7, 17, 34, .98)); box-shadow: 0 20px 65px rgba(0,0,0,.3); }
@@ -348,7 +349,7 @@
       .admin-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .admin-row { align-items: flex-start; }
       .admin-row .row-actions { justify-content: flex-end; }
-      .rule-card { flex-wrap: wrap; }
+      .rule-header-row { flex-wrap: wrap; }
       .rule-actions { width: 100%; }
       .rules-toolbar { align-items: flex-start; flex-direction: column; }
       .search-input { width: 100%; }
@@ -368,6 +369,10 @@
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
   </style>
+
+  <!-- Firebase App & Database CDN Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
   <main class="shell">
@@ -380,7 +385,7 @@
         </div>
       </div>
       <div class="top-actions">
-        <div class="connection"><span class="connection-dot" aria-hidden="true"></span><span>RULES DIRECTORY</span></div>
+        <div class="connection"><span class="connection-dot" aria-hidden="true"></span><span id="connectionStatus">CLOUD CONNECTED</span></div>
         <button class="button admin" id="adminAccessButton" type="button">Admin sign in</button>
       </div>
     </header>
@@ -398,7 +403,7 @@
       </div>
       <div class="category-grid" id="categoryGrid"></div>
       <div class="footer">LIVE RUSSIA • OFFICIAL COMMUNITY RULES</div>
-      <div class="footer">Powered By • Blaze King </div>
+      <div class="footer">Powered By • Blaze King</div>
     </section>
 
     <section id="categoryView" class="view" aria-labelledby="detailTitle">
@@ -449,7 +454,7 @@
       <div class="detail-hero admin-hero">
         <div class="eyebrow">ADMINISTRATOR AREA</div>
         <h2 id="adminTitle">Portal management</h2>
-        <p>Create sections, publish and edit rules, and prepare an updated portal file to share.</p>
+        <p>Create sections, publish and edit rules, and sync changes instantly to all player apps.</p>
       </div>
       <div class="admin-layout">
         <nav class="admin-nav" id="adminNav" aria-label="Admin sections"></nav>
@@ -484,11 +489,25 @@
                 <input id="ruleNumber" maxlength="32" placeholder="For example, 1.01">
               </div>
               <div class="field">
-                <label for="ruleText">Rule text</label>
-                <textarea id="ruleText" maxlength="12000" placeholder="Write the complete rule here"></textarea>
+                <label for="ruleText">Rule text (Main description)</label>
+                <textarea id="ruleText" maxlength="6000" placeholder="Write the complete rule here"></textarea>
               </div>
             </div>
-            <div class="form-actions">
+            <div class="form-row" style="margin-top:10px;">
+              <div class="field">
+                <label for="rulePunishment">Punishment (Saza)</label>
+                <input id="rulePunishment" maxlength="200" placeholder="For example: Jail 30 minutes / Warn">
+              </div>
+              <div class="field">
+                <label for="ruleNote">Note / Exception (Copy nahi hoga)</label>
+                <input id="ruleNote" maxlength="200" placeholder="Optional notes or exceptions">
+              </div>
+            </div>
+            <div class="field" style="flex-direction:row; align-items:center; gap:10px; margin-top:12px;">
+              <input type="checkbox" id="ruleAllowCopy" checked style="width:20px; height:20px; accent-color:var(--blue);">
+              <label for="ruleAllowCopy" style="cursor:pointer; color:#e2f1ff;">Allow players to copy this rule</label>
+            </div>
+            <div class="form-actions" style="margin-top:14px;">
               <button class="button primary" id="saveRuleButton" type="button">＋ Add rule</button>
               <button class="button quiet hidden" id="cancelRuleEditButton" type="button">Cancel edit</button>
             </div>
@@ -496,7 +515,7 @@
           </div>
 
           <div class="notice" id="localSaveNotice">
-            Changes save in this browser. To share the latest rules, download the updated portal HTML and give that file to your users.
+            Changes sync automatically via Firebase Cloud Database in real-time.
           </div>
           <div class="notice warning">
             This single-file portal has browser-only administrator controls, not secure server authentication. Anyone with access to the file can inspect or bypass those controls.
@@ -504,7 +523,7 @@
         </div>
       </div>
       <div class="form-actions" style="justify-content:center;margin-top:17px">
-        <button class="button primary" id="downloadPortalButton" type="button">↓ Download updated portal</button>
+        <button class="button primary" id="downloadPortalButton" type="button">↓ Download backup HTML</button>
       </div>
     </section>
 
@@ -525,12 +544,24 @@
   ]</script>
 
   <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8UIKcvS37FewA8fV2mPSWWV1gIriy2RM",
+      authDomain: "lr-rule-book.firebaseapp.com",
+      projectId: "lr-rule-book",
+      storageBucket: "lr-rule-book.firebasestorage.app",
+      messagingSenderId: "14569054350",
+      appId: "1:14569054350:web:c39c500141d05db74169df",
+      measurementId: "G-F2N21CBCJB"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     (() => {
       "use strict";
 
       const ADMIN_USERNAME_SHA256 = "493e74439e9de4b59c62b60c0829c80e0672043c790a30f1a331e6211fe3a1ad";
       const ADMIN_PASSWORD_SHA256 = "e16da6939a2366620e4c9e2b56b00e99fe7ef66f26d073b8937e2416e19d0535";
-      const LEGACY_KEY = "lr_rules_data";
       const palette = ["cyan", "green", "red", "purple", "orange", "teal", "pink", "yellow", "violet"];
 
       const $ = (id) => document.getElementById(id);
@@ -542,16 +573,6 @@
         seedData = [];
       }
 
-      function fingerprint(text) {
-        let hash = 2166136261;
-        for (let i = 0; i < text.length; i += 1) {
-          hash ^= text.charCodeAt(i);
-          hash = Math.imul(hash, 16777619);
-        }
-        return (hash >>> 0).toString(16);
-      }
-
-      const storageKey = "live-russia-rules-" + fingerprint(JSON.stringify(seedData));
       let isAdmin = false;
       let currentView = "homeView";
       let returnView = "homeView";
@@ -559,7 +580,7 @@
       let activeAdminTab = "sections";
       let editingRule = null;
       let toastTimer = 0;
-      let storageAvailable = true;
+      let data = [];
 
       function normalizeCategories(value) {
         if (!Array.isArray(value)) return null;
@@ -577,37 +598,28 @@
                   .map((rule, ruleIndex) => ({
                     id: String(rule.id || "rule-" + categoryIndex + "-" + ruleIndex + "-" + Date.now()),
                     number: String(rule.number || "").trim().slice(0, 32),
-                    text: rule.text.slice(0, 12000),
+                    text: rule.text.slice(0, 6000),
+                    punishment: String(rule.punishment || "").trim().slice(0, 200),
+                    note: String(rule.note || "").trim().slice(0, 200),
+                    allowCopy: rule.allowCopy !== false
                   }))
               : [],
           }));
       }
 
-      function loadInitialData() {
-        try {
-          const saved = localStorage.getItem(storageKey);
-          if (saved !== null) {
-            const normalized = normalizeCategories(JSON.parse(saved));
-            if (normalized) return normalized;
-          }
-          if (seedNode.dataset.published !== "true") {
-            const legacy = localStorage.getItem(LEGACY_KEY);
-            if (legacy) {
-              const migrated = normalizeCategories(JSON.parse(legacy));
-              if (migrated && migrated.length) {
-                localStorage.setItem(storageKey, JSON.stringify(migrated));
-                return migrated;
-              }
-            }
-          }
-          return normalizeCategories(seedData) || [];
-        } catch {
-          storageAvailable = false;
-          return normalizeCategories(seedData) || [];
+      // Realtime listener from Firebase database
+      db.ref("rulesPortal").on("value", (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          data = normalizeCategories(val) || [];
+        } else {
+          data = normalizeCategories(seedData) || [];
+          db.ref("rulesPortal").set(data);
         }
-      }
-
-      let data = loadInitialData();
+        renderAll();
+      }, (error) => {
+        showToast("Cloud connection error. Check internet connection.", true);
+      });
 
       function showToast(message, isError = false) {
         const toast = $("toast");
@@ -618,17 +630,14 @@
         toastTimer = window.setTimeout(() => toast.classList.add("hidden"), 3600);
       }
 
-      function persist(message = "Changes saved in this browser.") {
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(data));
-          storageAvailable = true;
-          showToast(message);
-          return true;
-        } catch {
-          storageAvailable = false;
-          showToast("Browser storage is unavailable. Changes may be lost when this file closes.", true);
-          return false;
-        }
+      function persist(message = "Changes synced to cloud.") {
+        db.ref("rulesPortal").set(data)
+          .then(() => {
+            showToast(message);
+          })
+          .catch(() => {
+            showToast("Failed to sync changes to cloud.", true);
+          });
       }
 
       function makeId(prefix) {
@@ -724,7 +733,7 @@
 
         const query = $("ruleSearch").value.trim().toLocaleLowerCase();
         const matches = category.rules.filter((rule) =>
-          (rule.number + " " + rule.text).toLocaleLowerCase().includes(query)
+          (rule.number + " " + rule.text + " " + rule.punishment).toLocaleLowerCase().includes(query)
         );
         $("rulesCount").textContent = category.rules.length + (category.rules.length === 1 ? " rule" : " rules");
 
@@ -748,13 +757,71 @@
         matches.forEach((rule) => {
           const card = document.createElement("article");
           card.className = "rule-card";
+
+          const headerRow = document.createElement("div");
+          headerRow.className = "rule-header-row";
+
           const number = document.createElement("div");
           number.className = "rule-number";
           number.textContent = rule.number || "RULE";
+
+          const contentDiv = document.createElement("div");
+          contentDiv.style.flex = "1";
+          contentDiv.style.minWidth = "0";
+
           const text = document.createElement("div");
           text.className = "rule-text";
           text.textContent = rule.text;
-          card.append(number, text);
+          contentDiv.appendChild(text);
+
+          if (rule.punishment) {
+            const punishmentEl = document.createElement("div");
+            punishmentEl.style.marginTop = "6px";
+            punishmentEl.style.color = "#ff8fa3";
+            punishmentEl.style.fontSize = "0.83rem";
+            punishmentEl.style.fontWeight = "700";
+            punishmentEl.textContent = "⚖ Punishment: " + rule.punishment;
+            contentDiv.appendChild(punishmentEl);
+          }
+
+          if (rule.note) {
+            const noteEl = document.createElement("div");
+            noteEl.style.marginTop = "4px";
+            noteEl.style.color = "#ffce79";
+            noteEl.style.fontSize = "0.8rem";
+            noteEl.textContent = "💡 Note: " + rule.note;
+            contentDiv.appendChild(noteEl);
+          }
+
+          headerRow.append(number, contentDiv);
+          card.appendChild(headerRow);
+
+          // Footer row for Copy and Admin Actions
+          const footerRow = document.createElement("div");
+          footerRow.className = "rule-footer-row";
+
+          const leftFooter = document.createElement("div");
+          if (rule.allowCopy) {
+            const copyBtn = makeButton("📋 Copy Rule", "button small quiet", () => {
+              let copyText = `Rule: ${rule.number}\n${rule.text}`;
+              if (rule.punishment) {
+                copyText += `\nPunishment: ${rule.punishment}`;
+              }
+              navigator.clipboard.writeText(copyText).then(() => {
+                showToast("Rule copied to clipboard!");
+              }).catch(() => {
+                showToast("Failed to copy rule.", true);
+              });
+            });
+            leftFooter.appendChild(copyBtn);
+          } else {
+            const restrictionText = document.createElement("span");
+            restrictionText.style.color = "var(--muted)";
+            restrictionText.style.fontSize = "0.75rem";
+            restrictionText.textContent = "Copy restricted by admin";
+            leftFooter.appendChild(restrictionText);
+          }
+          footerRow.appendChild(leftFooter);
 
           if (isAdmin) {
             const actions = document.createElement("div");
@@ -766,8 +833,10 @@
               }),
               makeButton("Remove", "button small danger", () => deleteRule(category.id, rule.id))
             );
-            card.appendChild(actions);
+            footerRow.appendChild(actions);
           }
+
+          card.appendChild(footerRow);
           list.appendChild(card);
         });
       }
@@ -838,6 +907,9 @@
         select.disabled = !hasSections;
         $("ruleNumber").disabled = !hasSections;
         $("ruleText").disabled = !hasSections;
+        $("rulePunishment").disabled = !hasSections;
+        $("ruleNote").disabled = !hasSections;
+        $("ruleAllowCopy").disabled = !hasSections;
         $("saveRuleButton").disabled = !hasSections;
         renderAdminRules();
       }
@@ -869,7 +941,7 @@
           const title = document.createElement("span");
           title.className = "admin-row-title";
           title.style.color = "#66e8ff";
-          title.textContent = rule.number || "RULE";
+          title.textContent = (rule.number || "RULE") + (rule.allowCopy ? " (Copy Allowed)" : " (Copy Blocked)");
           const meta = document.createElement("span");
           meta.className = "admin-row-meta";
           meta.textContent = rule.text.length > 160 ? rule.text.slice(0, 157) + "…" : rule.text;
@@ -960,6 +1032,9 @@
         editingRule = null;
         $("ruleNumber").value = "";
         $("ruleText").value = "";
+        $("rulePunishment").value = "";
+        $("ruleNote").value = "";
+        $("ruleAllowCopy").checked = true;
         $("saveRuleButton").textContent = "＋ Add rule";
         $("cancelRuleEditButton").classList.add("hidden");
       }
@@ -976,6 +1051,9 @@
         $("ruleSection").value = categoryId;
         $("ruleNumber").value = rule.number;
         $("ruleText").value = rule.text;
+        $("rulePunishment").value = rule.punishment || "";
+        $("ruleNote").value = rule.note || "";
+        $("ruleAllowCopy").checked = rule.allowCopy !== false;
         $("saveRuleButton").textContent = "Save changes";
         $("cancelRuleEditButton").classList.remove("hidden");
         renderAdminRules();
@@ -987,6 +1065,10 @@
         const destination = data.find((item) => item.id === $("ruleSection").value);
         const number = $("ruleNumber").value.trim();
         const text = $("ruleText").value.trim();
+        const punishment = $("rulePunishment").value.trim();
+        const note = $("ruleNote").value.trim();
+        const allowCopy = $("ruleAllowCopy").checked;
+
         if (!destination) {
           showToast("Create a section before adding a rule.", true);
           return;
@@ -995,6 +1077,7 @@
           showToast("Enter both a rule number and rule text.", true);
           return;
         }
+
         if (editingRule) {
           const source = data.find((item) => item.id === editingRule.categoryId);
           const sourceIndex = source ? source.rules.findIndex((item) => item.id === editingRule.ruleId) : -1;
@@ -1006,10 +1089,20 @@
           }
           const [rule] = source.rules.splice(sourceIndex, 1);
           rule.number = number.slice(0, 32);
-          rule.text = text.slice(0, 12000);
+          rule.text = text.slice(0, 6000);
+          rule.punishment = punishment.slice(0, 200);
+          rule.note = note.slice(0, 200);
+          rule.allowCopy = allowCopy;
           destination.rules.push(rule);
         } else {
-          destination.rules.push({ id: makeId("rule"), number: number.slice(0, 32), text: text.slice(0, 12000) });
+          destination.rules.push({
+            id: makeId("rule"),
+            number: number.slice(0, 32),
+            text: text.slice(0, 6000),
+            punishment: punishment.slice(0, 200),
+            note: note.slice(0, 200),
+            allowCopy: allowCopy
+          });
         }
         const selectedCategoryId = destination.id;
         clearRuleForm();
@@ -1068,10 +1161,6 @@
         if (!isAdmin) return;
         try {
           const clone = document.documentElement.cloneNode(true);
-          const cloneSeed = clone.querySelector("#portal-seed");
-          cloneSeed.textContent = JSON.stringify(data).replace(/</g, "\\u003c");
-          cloneSeed.dataset.published = "true";
-
           clone.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === "homeView"));
           [
             "#categoryGrid", "#ruleList", "#adminNav", "#sectionManageList",
@@ -1088,6 +1177,8 @@
           clone.querySelector("#adminPassword").value = "";
           clone.querySelector("#ruleNumber").value = "";
           clone.querySelector("#ruleText").value = "";
+          clone.querySelector("#rulePunishment").value = "";
+          clone.querySelector("#ruleNote").value = "";
           clone.querySelector("#newSectionName").value = "";
           clone.querySelector("#newSectionIcon").value = "";
           const source = "<!doctype html>\n" + clone.outerHTML;
@@ -1095,14 +1186,14 @@
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url;
-          link.download = "live-russia-rules-portal.html";
+          link.download = "live-russia-rules-backup.html";
           document.body.appendChild(link);
           link.click();
           link.remove();
           window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-          showToast("Updated portal downloaded. Share the new HTML file with your users.");
+          showToast("Backup portal file downloaded.");
         } catch {
-          showToast("The updated portal could not be downloaded in this browser.", true);
+          showToast("The backup portal could not be downloaded.", true);
         }
       }
 
@@ -1168,14 +1259,6 @@
       });
       $("ruleSearch").addEventListener("input", renderPublicRules);
       $("downloadPortalButton").addEventListener("click", downloadUpdatedPortal);
-
-      renderCategories();
-      renderSectionManager();
-      renderRuleSectionSelect();
-      renderAdminNav();
-      if (!storageAvailable) {
-        showToast("Browser storage is unavailable. Changes may be lost when this file closes.", true);
-      }
     })();
   </script>
 </body>
